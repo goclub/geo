@@ -6,6 +6,7 @@ import (
 	xerr "github.com/goclub/error"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/ewkb"
+	"math"
 )
 
 // Point GeoJSON  支持 mongo bson mysql
@@ -66,11 +67,27 @@ func (p *Point) Scan(data interface{}) (err error) {
 	p.Coordinates = proxy
 	return
 }
-func (p Point) Validator() (err error) {
+func (p Point) Validator(custom ...error) (err error) {
+	outError := xerr.New(fmt.Sprintf("xgeo.Point{} invalid format"))
+	if len(custom) != 0 {
+		outError = custom[0]
+	}
 	data := p.WGS84()
 	valid := -90 <= data.Latitude && data.Latitude <= 90 && -180 <= data.Longitude && data.Longitude <= 180
 	if valid == false {
-		return xerr.New(fmt.Sprintf("xgeo.Point{} invalid format"))
+		return outError
 	}
 	return
+}
+
+func (p Point) DistanceInMeters(target Point) float64 {
+	earthRadius := 6371000.0 // 地球半径，单位是米
+	lat1 := p.Coordinates[1] * math.Pi / 180.0
+	lat2 := target.Coordinates[1] * math.Pi / 180.0
+	deltaLat := (target.Coordinates[1] - p.Coordinates[1]) * math.Pi / 180.0
+	deltaLon := (target.Coordinates[0] - p.Coordinates[0]) * math.Pi / 180.0
+	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) + math.Cos(lat1)*math.Cos(lat2)*math.Sin(deltaLon/2)*math.Sin(deltaLon/2)
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	distance := earthRadius * c
+	return distance
 }

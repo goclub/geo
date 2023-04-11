@@ -85,14 +85,18 @@ func (p *Polygon) Scan(data interface{}) (err error) {
 	return
 }
 
-func (p Polygon) Validator() (err error) {
+func (p Polygon) Validator(custom ...error) (err error) {
+	outError := xerr.New(fmt.Sprintf("xgeo.Polygon{} invalid format"))
+	if len(custom) != 0 {
+		outError = custom[0]
+	}
 	for _, lineString := range p.Coordinates {
 		for _, point := range lineString {
 			longitude := point[0]
 			latitude := point[1]
 			valid := -90 <= latitude && latitude <= 90 && -180 <= longitude && longitude <= 180
 			if valid == false {
-				return xerr.New(fmt.Sprintf("xgeo.Polygon{} invalid format"))
+				return outError
 			}
 		}
 	}

@@ -75,13 +75,17 @@ func (p *LineString) Scan(data interface{}) (err error) {
 	}
 	return
 }
-func (p LineString) Validator() (err error) {
+func (p LineString) Validator(custom ...error) (err error) {
+	outError := xerr.New(fmt.Sprintf("xgeo.LineString{} invalid format"))
+	if len(custom) != 0 {
+		outError = custom[0]
+	}
 	for _, point := range p.Coordinates {
 		longitude := point[0]
 		latitude := point[1]
 		valid := -90 <= latitude && latitude <= 90 && -180 <= longitude && longitude <= 180
 		if valid == false {
-			return xerr.New(fmt.Sprintf("xgeo.LineString{} invalid format"))
+			return outError
 		}
 	}
 	return
