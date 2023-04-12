@@ -49,13 +49,26 @@ func TestPointDB(t *testing.T) {
 }
 
 func TestDistanceInMeters(t *testing.T) {
-	p1 := Point{Type: "Point", Coordinates: [2]float64{116.3975, 39.9088}} // 北京市中心
-	p2 := Point{Type: "Point", Coordinates: [2]float64{121.4737, 31.2304}} // 上海市中心
-	expectedDistance := 1068150.25
+	{
+		p1 := Point{Type: "Point", Coordinates: [2]float64{116.3975, 39.9088}} // 北京市中心
+		p2 := Point{Type: "Point", Coordinates: [2]float64{121.4737, 31.2304}} // 上海市中心
+		distance := p1.DistanceInMeters(p2)
+		expectedDistance := 1068150.25
+		if math.Abs(distance-expectedDistance) > 2 {
+			t.Errorf("DistanceInMeters() = %v, want %v", distance, expectedDistance)
+		}
+	}
+	{
+		// 故宫左上角
+		p1 := Point{Type: "Point", Coordinates: [2]float64{116.38598990305788, 39.92095998360464}}
+		// 故宫左下角
+		p2 := Point{Type: "Point", Coordinates: [2]float64{116.3864354692231, 39.91197010582487}}
+		distance := p1.DistanceInMeters(p2)
+		var expectedDistance float64 = 1000
+		log.Print(math.Abs(distance - expectedDistance))
+		if math.Abs(distance-expectedDistance) > 2 {
+			t.Errorf("DistanceInMeters() = %v, want %v", distance, expectedDistance)
+		}
 
-	distance := p1.DistanceInMeters(p2)
-	log.Print(math.Abs(distance - expectedDistance))
-	if math.Abs(distance-expectedDistance) > 2 {
-		t.Errorf("DistanceInMeters() = %v, want %v", distance, expectedDistance)
 	}
 }
